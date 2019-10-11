@@ -38,20 +38,20 @@ length(unique(data[,2]))
 sapply(train.data, function(x) sum(is.na(x)))
 ```
 
-#Replace missing value of Household income with the mean household income of the customer's province .
+# Replace missing value of Household income with the mean household income of the customer's province .
 ```{r}
 clean_data<-impute_proxy(train.data, Household ~ mean(Household,na.rm=TRUE) | province_name)
 ```
 
-#Province_code has a 3992  missing values, but the column is not needed because the same information is provided by province_name, as a result the Province_code column will be removed
+# Province_code has a 3992  missing values, but the column is not needed because the same information is provided by province_name, as a result the Province_code column will be removed
 ```{r}
 clean_data<-clean_data[-20]
 ```
 
-#All the missing value were replaced with the approprite values, but there are some empty spaces for different variables, which need
-to be replaced. Emp_spouse has the value of "S" if the customer is the spouse of an employee and "N" otherwise. We notice that out
-of 2.710.381 observations, we have only 3 entry for S and 341 for N. The rest are blank spaces. In conclusion, the variable
-emp_spouse doesn't offer a lot of information and the entire column will be removed.
+# All the missing value were replaced with the approprite values, but there are some empty spaces for different variables, which need
+# to be replaced. Emp_spouse has the value of "S" if the customer is the spouse of an employee and "N" otherwise. We notice that out
+# of 2.710.381 observations, we have only 3 entry for S and 341 for N. The rest are blank spaces. In conclusion, the variable
+# emp_spouse doesn't offer a lot of information and the entire column will be removed.
 
 ```{r}
 #emp_spouce with value S
@@ -63,7 +63,7 @@ length(clean_data$emp_spouse[clean_data$emp_spouse==""])
 clean_data<-clean_data[-16]
 ```
 
-#Sex column has 15 empty spaces and they will be replaced with the most comun value
+# Sex column has 15 empty spaces and they will be replaced with the most comun value
 ```{r}
 #Number of blank space in Sex Column
 length(clean_data$Sex[clean_data$Sex==""])
@@ -75,14 +75,15 @@ calculate_mode<-function(x){
 clean_data$Sex[clean_data$Sex==""]<-calculate_mode(clean_data$Sex)
 ```
 
-#Pr_customer_ld has 2703492 empty space, as a result the column will be removed( as most of the cells were empty)
+# Pr_customer_ld has 2703492 empty space, as a result the column will be removed( as most of the cells were empty)
 ```{r}
 length(clean_data$Pr_customer_ld[clean_data$Pr_customer_ld==""])
 #remove the Pr_customer_ld column
 clean_data<-clean_data[-11]
 ```
 
-#The Customer_type column should have the following values:1,2,3,4 and P. We will replace 1.0 with 1, 2.0 with 2, 3.0 with 3 and 4.0 with 4, P with a value of 5 and the empty spaces will be replaced with the most comun value. 
+# The Customer_type column should have the following values:1,2,3,4 and P. We will replace 1.0 with 1, 2.0 with 2, 3.0 with 3
+# and 4.0 with 4, P with a value of 5 and the empty spaces will be replaced with the most comun value. 
 ```{r}
 length(clean_data$Customer_type[clean_data$Customer_type==""])
 unique(clean_data$Customer_type)
@@ -95,7 +96,7 @@ clean_data$Customer_type[clean_data$Customer_type==""]<-calculate_mode(clean_dat
 clean_data$Customer_type<-as.factor(clean_data$Customer_type)
 ```
 
-#The 47325 empty spaces in Customer_st_end_m will be replaced as well as the most comun value
+# The 47325 empty spaces in Customer_st_end_m will be replaced as well as the most comun value
 ```{r}
 #nr of blank spaces in Customer_st_end_m
 length(clean_data$Customer_st_end_m[clean_data$Customer_st_end_m==""])
@@ -103,7 +104,8 @@ length(clean_data$Customer_st_end_m[clean_data$Customer_st_end_m==""])
 clean_data$Customer_st_end_m[clean_data$Customer_st_end_m==""]<-calculate_mode(clean_data$Customer_st_end_m)
 ```
 
-#The Entry_chanal variable has 58.026 blank spaces. They will be replaced with the most frequent value that occurs in the case of females and then we will do the same thing for males
+# The Entry_chanal variable has 58.026 blank spaces. They will be replaced with the most frequent value that occurs
+# in the case of females and then we will do the same thing for males
 ```{r}
 length(clean_data$Entry_chanal[clean_data$Entry_chanal==""])
 Entry_chanal_female=calculate_mode(clean_data$Entry_chanal[grepl("V",clean_data$Sex)])
@@ -115,13 +117,15 @@ clean_data$Entry_chanal[grepl("H",clean_data$Sex) & clean_data$Entry_chanal==""]
 rm(Entry_chanal_female, Entry_chanal_male)
 ```
 
- #The blank spaces in segment variable will be considered as different segment that it will be named "Other"
+ # The blank spaces in segment variable will be considered as different segment that it will be named "Other"
 ```{r}
 length(clean_data$Segment[clean_data$Segment==""])
 clean_data$Segment[clean_data$Segment==""]<-"Other"
 ```
 
-#The province_name variable has 11.932 blank spaces. After further investigation we notice that the customers for whom the province_name is blank,  19 of them are from Spain and the most comun value will be imputed and the rest come from other countries than Spain. We will impute the value "International" for the blank spaces in this case.
+# The province_name variable has 11.932 blank spaces. After further investigation we notice that the customers for whom the
+# province_name is blank,  19 of them are from Spain and the most comun value will be imputed and the rest come from other countries
+# than Spain. We will impute the value "International" for the blank spaces in this case.
 ```{r} 
 #Number of observation with blank space in the province_name column"
 length(clean_data$province_name[clean_data$province_name==""])
@@ -137,13 +141,15 @@ clean_data$province_name[clean_data$province_name==""& clean_data$Country=="ES"]
 clean_data$province_name[clean_data$province_name==""]<-"International"
 ```
 
-#Date2, the date at which the individual became a customer of the bank is not needed as the same information is reflected in the Seniority(months)= the difference between Date and Date 2
+# Date2, the date at which the individual became a customer of the bank is not needed as the same information is reflected 
+# in the Seniority(months)= the difference between Date and Date 2
 ```{r}
 clean_data<-clean_data[-7]
 ```
 
 
-#The purpose of recommender system is to recommend new products to the active customers.As a result, inactive and deceased customers will be removed
+# The purpose of recommender system is to recommend new products to the active customers.As a result, inactive and deceased
+# customers will be removed
 ```{r}
 #subsetting just the customers who are active
 clean_data<-subset(clean_data, clean_data$Activity_st=="1")
