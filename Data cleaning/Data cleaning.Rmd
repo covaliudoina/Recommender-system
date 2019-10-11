@@ -43,7 +43,8 @@ sapply(train.data, function(x) sum(is.na(x)))
 clean_data<-impute_proxy(train.data, Household ~ mean(Household,na.rm=TRUE) | province_name)
 ```
 
-# Province_code has a 3992  missing values, but the column is not needed because the same information is provided by province_name, as a result the Province_code column will be removed
+# Province_code has a 3992  missing values, but the column is not needed because the same information is provided by province_name,
+# as a result the Province_code column will be removed
 ```{r}
 clean_data<-clean_data[-20]
 ```
