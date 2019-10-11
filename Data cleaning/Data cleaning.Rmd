@@ -1,50 +1,49 @@
 #Get the names of the column which are in spanish and replace them with the english equivalent
 
 ```{r}
-colnames(data)=c("fecha_dato"="Date","ncodpers"="Id","ind_empleado"="Emp_status","pais_residencia"="Country","sexo"="Sex","age"="Age", "fecha_alta"= "Date2", "ind_nuevo"="New_Customer", "antiguedad"="Seniority","indrel"="Primary_customer", "ult_fec_cli_1t"="Pr_customer_ld", "indrel_1mes"="Customer_type", "tiprel_1mes"="Customer_st_end_m", "indresi"="Residency", "indext"="Foreigner", "conyuemp"="emp_spouse", "canal_entrada"="Entry_chanal", "indfall"="Deceased", "tipodom"="Address_type", "cod_prov"="Province_code",   "nomprov"="province_name", "ind_actividad_cliente"="Activity_st", "renta"="Household", "segmento"="Segment", "ind_ahor_fin_ult1"="Savings", "ind_aval_fin_ult1"="Guarantees", "ind_cco_fin_ult1"="Current_Acc", "ind_cder_fin_ult1"="Derivada", "ind_cno_fin_ult1"="Payroll_Acc", "ind_ctju_fin_ult1"="Junior_Acc", "ind_ctma_fin_ult1"="M_particular_Acc ",   "ind_ctop_fin_ult1"="Particular_Acc", "ind_ctpp_fin_ult1"="Particular_Plus_Acc", "ind_deco_fin_ult1"="Short_term_dep", "ind_deme_fin_ult1"="Medium_term_dep",  "ind_dela_fin_ult1"="Long_term_dep", "ind_ecue_fin_ult1"="e-account", "ind_fond_fin_ult1"="Funds", "ind_hip_fin_ult1" = "Mortgage", "ind_plan_fin_ult1"="Pensions_Acc", "ind_pres_fin_ult1"= "Loans", "ind_reca_fin_ult1"="Taxes", "ind_tjcr_fin_ult1"="Credit_Card", "ind_valo_fin_ult1"="Securities", "ind_viv_fin_ult1"="Home_Acc", "ind_nomina_ult1"="Payroll", "ind_nom_pens_ult1"="Pensions", "ind_recibo_ult1"="Direct_Debit")
-
+colnames(data)=c("fecha_dato"="Date","ncodpers"="Id","ind_empleado"="Emp_status","pais_residencia"="Country","sexo"="Sex","age"="Age",
+"fecha_alta"= "Date2", "ind_nuevo"="New_Customer", "antiguedad"="Seniority","indrel"="Primary_customer",
+"ult_fec_cli_1t"="Pr_customer_ld", "indrel_1mes"="Customer_type", "tiprel_1mes"="Customer_st_end_m", "indresi"="Residency",
+"indext"="Foreigner", "conyuemp"="emp_spouse", "canal_entrada"="Entry_chanal", "indfall"="Deceased", "tipodom"="Address_type",
+"cod_prov"="Province_code",   "nomprov"="province_name", "ind_actividad_cliente"="Activity_st", "renta"="Household",
+"segmento"="Segment", "ind_ahor_fin_ult1"="Savings", "ind_aval_fin_ult1"="Guarantees", "ind_cco_fin_ult1"="Current_Acc",
+"ind_cder_fin_ult1"="Derivada", "ind_cno_fin_ult1"="Payroll_Acc", "ind_ctju_fin_ult1"="Junior_Acc", 
+"ind_ctma_fin_ult1"="M_particular_Acc ",   "ind_ctop_fin_ult1"="Particular_Acc", "ind_ctpp_fin_ult1"="Particular_Plus_Acc",
+"ind_deco_fin_ult1"="Short_term_dep", "ind_deme_fin_ult1"="Medium_term_dep",  "ind_dela_fin_ult1"="Long_term_dep",
+"ind_ecue_fin_ult1"="e-account", "ind_fond_fin_ult1"="Funds", "ind_hip_fin_ult1" = "Mortgage", "ind_plan_fin_ult1"="Pensions_Acc",
+"ind_pres_fin_ult1"= "Loans", "ind_reca_fin_ult1"="Taxes", "ind_tjcr_fin_ult1"="Credit_Card", "ind_valo_fin_ult1"="Securities",
+"ind_viv_fin_ult1"="Home_Acc", "ind_nomina_ult1"="Payroll", "ind_nom_pens_ult1"="Pensions", "ind_recibo_ult1"="Direct_Debit")
 ```
 
-As the database is very large we will look at 3 monthw of data from October 2015 untill December 2015
-to predict what products should be recommended to active customers
-
+#As the database is very large we will look at 3 monthw of data from October 2015 untill December 2015
+#to predict what products should be recommended to active customers
 ```{r}
 train.data<-subset(data, data$Date=="2015-10-28"|data$Date=="2015-11-28"|data$Date=="2015-12-28")
-
 ```
 
-Explore the structure of the data frame to understand the attributes, the class of the atributes
-
+#Explore the structure of the data frame to understand the attributes, the class of the atributes
 ```{r}
 head(train.data)
 str(train.data)
 ```
 
-
-Check how many unique cutomers are there in the database. 
-The second column hold the identification numbers for the customers
-
+#Check how many unique cutomers are there in the database. 
+#The second column hold the identification numbers for the customers
 ```{r}
 length(unique(data[,2]))
 ```
-Check HOW many missing values are in the dataframe for each attribute
 
+#Check HOW many missing values are in the dataframe for each attribute
 ```{r}
 sapply(train.data, function(x) sum(is.na(x)))
-
 ```
-Replace missing value of Household income with the mean household income of the customer's province .
 
+#Replace missing value of Household income with the mean household income of the customer's province .
 ```{r}
 clean_data<-impute_proxy(train.data, Household ~ mean(Household,na.rm=TRUE) | province_name)
-
-
-
 ```
 
-
-Province_code has a 3992  missing values, but the column is not needed because the same information is provided by province_name, as a result the Province_code column will be removed
-
+#Province_code has a 3992  missing values, but the column is not needed because the same information is provided by province_name, as a result the Province_code column will be removed
 ```{r}
 clean_data<-clean_data[-20]
 ```
