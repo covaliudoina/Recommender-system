@@ -15,25 +15,25 @@ colnames(data)=c("fecha_dato"="Date","ncodpers"="Id","ind_empleado"="Emp_status"
 "ind_viv_fin_ult1"="Home_Acc", "ind_nomina_ult1"="Payroll", "ind_nom_pens_ult1"="Pensions", "ind_recibo_ult1"="Direct_Debit")
 ```
 
-#As the database is very large we will look at 3 monthw of data from October 2015 untill December 2015
+# As the database is very large we will look at 3 monthw of data from October 2015 untill December 2015
 #to predict what products should be recommended to active customers
 ```{r}
 train.data<-subset(data, data$Date=="2015-10-28"|data$Date=="2015-11-28"|data$Date=="2015-12-28")
 ```
 
-#Explore the structure of the data frame to understand the attributes, the class of the atributes
+# Explore the structure of the data frame to understand the attributes, the class of the atributes
 ```{r}
 head(train.data)
 str(train.data)
 ```
 
-#Check how many unique cutomers are there in the database. 
+# Check how many unique cutomers are there in the database. 
 #The second column hold the identification numbers for the customers
 ```{r}
 length(unique(data[,2]))
 ```
 
-#Check HOW many missing values are in the dataframe for each attribute
+# Check HOW many missing values are in the dataframe for each attribute
 ```{r}
 sapply(train.data, function(x) sum(is.na(x)))
 ```
