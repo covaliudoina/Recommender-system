@@ -26,7 +26,7 @@ library("forecast")
 library("data.table")
 ```
 
-#read the csv file into a dataframe
+#read the csv file into a dataframe. The path to the document depends on where the csv file is saved
 
 ```{r}
 data <- read.csv("C:/Users/Doina/Desktop/santander/train_santander.csv", stringsAsFactors = FALSE)
