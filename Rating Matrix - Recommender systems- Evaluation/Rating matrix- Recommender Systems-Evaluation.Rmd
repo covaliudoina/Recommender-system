@@ -1,0 +1,142 @@
+Colaborative filtering Recommenders systems
+
+Building the rating Matrix in the format accepted by recommenderlab package
+```{r}
+# In order to use data.table package we transform the data frame into a data frame recognized by data.table
+
+S_dataset<-as.data.table(clean_data)
+
+# extract labels for the products from the dataset
+names_col = colnames(S_dataset[21:44])
+names_products = names_col[21:44] 
+
+
+# we make sure to include in our model  just those customers who have at least one product at the bank
+setkey(S_dataset, Id)
+S_dataset = S_dataset[S_dataset[,rowSums(.SD, na.rm = TRUE), .SDcols=names_products]>0]
+
+# The products are type integer and we will tranform it into type numeric 
+S_dataset= S_dataset[, .SD, .SDcols=c("Id", names_products)]
+S_dataset= S_dataset[, (names_products):=lapply(.SD, as.numeric), .SDcols=names_products]
+
+
+
+# create ratings matrix for the chosed Santander dataset
+S_matrix = as.matrix(S_dataset[, .SD, .SDcols=names_products])
+rownames(S_matrix) = S_dataset$Id
+S_matrix = as(S_matrix, "binaryRatingMatrix")
+S_matrix
+
+
+```
+
+Create an evaluation scheme to evaluate the 3 models using "split" method , which separates the data into training set 70% and test set 30%. 
+```{r}
+eval = evaluationScheme(S_matrix, method="split", train=0.7, given=-1)
+eval
+```
+
+Builing the Item-Based Collaborative filtering recommender system and the predict function which will be used for evaluation
+```{r}
+#create the recommender object for IBCF
+rec <- Recommender(getData(eval, "train"), "IBCF", parameter = list(k=50))
+rec
+
+#use the predict function to obtain a list of recommendations for the train set which will be used in the calcPredictionAccuracy to compare it with the list of recommendation for the test set("unkown data")
+pred <- predict(rec, getData(eval, "known"), type="topNList", n=5)
+pred
+
+
+#evaluation of the IBCF recommender system on the test set(unknown observations) and obtaining the evaluation metrics
+eval_IBCF<- calcPredictionAccuracy(pred, getData(eval, "unknown"), given = -1)
+eval_IBCF<-as.data.frame(as.list(eval_IBCF))
+
+#calculate the MAE and Accuracy
+eval_IBCF$MAE = (eval_IBCF$FP+eval_IBCF$FN)/(eval_IBCF$TN+eval_IBCF$FN+eval_IBCF$FP+eval_IBCF$TP)
+
+eval_IBCF$Accuracy=(eval_IBCF$TP+eval_IBCF$TN)/(eval_IBCF$TN+eval_IBCF$FN+eval_IBCF$FP+eval_IBCF$TP)
+
+
+```
+
+Building the Random Recommenders systems and obtaining the vealuation metrics
+```{r}
+#create the recommender object
+rec2<- Recommender(getData(eval, "train"), "RANDOM", parameter = NULL)
+
+#use the predict function to obtain a list of recommendations for the train set which will be used in the calcPredictionAccuracy to compare it with the list of recommendation for the test set("unkown data")
+rec2
+pred2 <- predict(rec2, getData(eval, "known"), type="topNList", n=5)
+
+
+#determine the evaluation metrics of the recommender system
+
+eval_Random<- calcPredictionAccuracy(pred2, getData(eval, "unknown"), given = -1)
+eval_Random<-as.data.frame(as.list(eval_Random))
+
+#calculate MAE and Accuracy
+eval_Random$MAE = (eval_Random$FP+eval_Random$FN)/(eval_Random$TN+eval_Random$FN+eval_Random$FP+eval_Random$TP)
+
+eval_Random$Accuracy=(eval_Random$TP+eval_Random$TN)/(eval_Random$TN+eval_Random$FN+eval_Random$FP+eval_Random$TP)
+```
+
+
+ Building the Popular Recommender sytem and calculating the evaluation metrics
+
+```{r}
+#create the recommender object
+rec3<- Recommender(getData(eval, "train"), "POPULAR", parameter = NULL)
+rec3
+
+pred3 <- predict(rec3, getData(eval, "known"), type="topNList", n=5)
+
+#determine the evaluation metrics
+eval_Pop<- calcPredictionAccuracy(pred3, getData(eval, "unknown"), given = -1)
+eval_Pop<-as.data.frame(as.list(eval_Pop))
+
+#calculate mean absolute error
+eval_Pop$MAE = (eval_Pop$FP+eval_Pop$FN)/(eval_Pop$TN+eval_Pop$FN+eval_Pop$FP+eval_Pop$TP)
+#calculate accuracy
+eval_Pop$Accuracy=(eval_Pop$TP+eval_Pop$TN)/(eval_Pop$TN+eval_Pop$FN+eval_Pop$FP+eval_Pop$TP)
+```
+#Comparing algorithms. it is clear that the Popular recommender system performs the best, followed by Item-based recommender system
+
+```{r}
+Results<-data.frame(Algorithms=c("IBCF", "Popular","Random"))
+Results_Alg<-rbind(eval_IBCF,eval_Pop, eval_Random)
+Results_Final<-cbind.data.frame(Results,Results_Alg)
+Results_Final
+
+ggplot(data=Results_Final, aes(x=Algorithms, y=MAE, fill=Algorithms)) + geom_bar(stat="identity", width = 0.5)+scale_fill_brewer(palette = "Accent")
+
+ggplot(data=Results_Final, aes(x=Algorithms, y=Accuracy, fill=Algorithms)) + geom_bar(stat="identity", width = 0.5)+ylim(0,1)+scale_fill_brewer(palette = "Dark2")
+```
+
+Ploting the ROC curve for all the algorithms, a easy way to undersand how the algorithms will perform for 1,5,10,15,20 or 24 item predicted.
+
+```{r}
+#creating the evaluation scheme using cross validation method
+scheme <- evaluationScheme(S_matrix, method="cross-validation", k=10, given=-1)
+scheme
+
+#create a list with all the algorithms
+algorithms <- list("item-based CF" = list(name="IBCF", param=list(k=50)), "random items" = list(name="RANDOM", param=NULL), "popular items" = list(name="POPULAR", param=NULL))
+algorithms
+
+#obtain the evaluation metrics and plot them
+results <- evaluate(scheme, algorithms, type = "topNList",n=c(1,5,10,15,20,24))
+results
+plot(results, annotate=TRUE)
+plot(results, "prec/rec", annotate=TRUE)
+```
+
+
+Display a list of recomendations for the first users
+
+```{r}
+pred3_test<-predict(rec3, getData(eval, "unknown"), type="topNList", n=5)
+predicted_items<-as(pred3_test,"list")
+predicted_items[2:11]
+
+
+```
