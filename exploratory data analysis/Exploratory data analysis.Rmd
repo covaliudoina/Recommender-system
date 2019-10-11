@@ -1,0 +1,44 @@
+Looking at the correlation between products, it is noticeable that there is a strong correlation between Pension and Payroll Acccount, between Pension and Direct Debit and Payroll_Acc and Direct Debit
+
+```{r}
+
+correlation<-cor(clean_data[,21:44])
+ggcorrplot(correlation, hc.order = TRUE, type = "upper")
+```
+
+  The most popular products accoring to the plot are: Curent Account, followed by Direct_Debit, Particular Account, e-account and Payroll Account
+
+```{r}
+corr_data<-clean_data[,21:44]
+x<-colSums(corr_data)
+order((x),decreasing = TRUE)
+
+barplot(x, las=2,beside=TRue,col = rainbow(24))
+rm(x, corr_data)
+
+```
+
+#Distribution of age of active customers
+
+```{r}
+
+clean_data$Age<-as.numeric(as.character(clean_data$Age))
+hist(clean_data$Age, col=heat.colors(20), main="Distribution of Age", xlab="Age")
+```
+
+
+  Distribution of Household income per age per segment. we observe that PARTICULARES is the segment that has the most of the customer with higher household income, followed by UNIVERSITARIO
+
+```{r}
+
+qplot(Age, Household, data = clean_data, facets = . ~Segment, )
+ 
+```
+  In order to build a Item-Based corellative filterying recommender system, a closer look at the products that customers have at the bank is needed. It appears that only one customer has 14 products at the same time and there are 7477 customers who don't have any products. This last category of customers don't have any product history and will not bring any information to the recommender system. Many of the customers (844443) have only one product. In the analysis only customers who have at least one product will be considered. 
+```{r}
+totalproducts<-rowSums(clean_data[,21:44], na.rm = TRUE)
+table(totalproducts)
+barplot(table(totalproducts), las=3, col=rainbow(15))
+rm(totalproducts)
+
+```
