@@ -48,7 +48,10 @@ clean_data<-impute_proxy(train.data, Household ~ mean(Household,na.rm=TRUE) | pr
 clean_data<-clean_data[-20]
 ```
 
-#All the missing value were replaced with the approprite values, but there are some empty spaces for different variables, which need to be replaced. Emp_spouse has the value of "S" if the customer is the spouse of an employee and "N" otherwise. We notice that out of 2.710.381 observations, we have only 3 entry for S and 341 for N. The rest are blank spaces. In conclusion, the variable emp_spouse doesn't offer a lot of information and the entire column will be removed.
+#All the missing value were replaced with the approprite values, but there are some empty spaces for different variables, which need
+to be replaced. Emp_spouse has the value of "S" if the customer is the spouse of an employee and "N" otherwise. We notice that out
+of 2.710.381 observations, we have only 3 entry for S and 341 for N. The rest are blank spaces. In conclusion, the variable
+emp_spouse doesn't offer a lot of information and the entire column will be removed.
 
 ```{r}
 #emp_spouce with value S
